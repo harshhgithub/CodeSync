@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
 import io from "socket.io-client";
 import Editor from "@monaco-editor/react";
@@ -17,7 +17,7 @@ const App = () => {
   const [userName, setUserName] = useState("");
   const [language, setLanguage] = useState("javascript");
   const [version, setVersion] = useState("*");
-  const [files, setFiles] = useState({}); // 🔥 Multiple files
+  const [files, setFiles] = useState({});
   const [activeFile, setActiveFile] = useState("main.js");
   const [code, setCode] = useState("// start code here");
   const [users, setUsers] = useState([]);
@@ -26,6 +26,12 @@ const App = () => {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [notifications, setNotifications] = useState([]);
+
+  // 💬 Chat states
+  const [chat, setChat] = useState([]);
+  const [message, setMessage] = useState("");
+  const [chatOpen, setChatOpen] = useState(false);
+  const chatEndRef = useRef(null);
 
   // 🔹 Socket Listeners
   useEffect(() => {
@@ -46,16 +52,17 @@ const App = () => {
     socket.on("userListUpdate", (list) => setUsers(list));
     socket.on("userNotification", (notif) => {
       setNotifications((prev) => [...prev, notif]);
-      setTimeout(
-        () => setNotifications((prev) => prev.slice(1)),
-        3000
-      );
+      setTimeout(() => setNotifications((prev) => prev.slice(1)), 3000);
     });
 
     socket.on("userTyping", (user) => {
       setTyping(`${user.slice(0, 8)}... is typing`);
       setTimeout(() => setTyping(""), 2000);
     });
+
+    // 💬 Chat listeners
+    socket.on("loadChat", (msgs) => setChat(msgs));
+    socket.on("receiveMessage", (msg) => setChat((prev) => [...prev, msg]));
 
     return () => {
       socket.off("loadFiles");
@@ -65,8 +72,15 @@ const App = () => {
       socket.off("userListUpdate");
       socket.off("userNotification");
       socket.off("userTyping");
+      socket.off("loadChat");
+      socket.off("receiveMessage");
     };
   }, [activeFile]);
+
+  // 💬 Auto-scroll chat to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chat]);
 
   // Leave room on tab close
   useEffect(() => {
@@ -134,6 +148,13 @@ const App = () => {
     );
   };
 
+  // 💬 Send Message
+  const sendMessage = () => {
+    if (!message.trim()) return;
+    socket.emit("sendMessage", { roomId, userName, text: message });
+    setMessage("");
+  };
+
   // ============================
   // JOIN PAGE
   // ============================
@@ -189,13 +210,53 @@ const App = () => {
   // ============================
   return (
     <div className="editor-container">
-      {/* 🔥 Notifications */}
+      {/* 🔔 Notifications */}
       <div className="notification-container">
         {notifications.map((n, i) => (
           <div key={i} className={`notification ${n.type}`}>
             {n.message}
           </div>
         ))}
+      </div>
+
+      {/* 💬 Floating Chat */}
+      <div className="floating-chat">
+        <button
+          className={`chat-toggle-btn ${chatOpen ? "open" : ""}`}
+          onClick={() => setChatOpen(!chatOpen)}
+        >
+          💬
+        </button>
+
+        {chatOpen && (
+          <div className="chat-window">
+            <div className="chat-header">
+              <h3>Group Chat</h3>
+              <button className="close-btn" onClick={() => setChatOpen(false)}>
+                ✖
+              </button>
+            </div>
+            <div className="chat-box">
+              {chat.map((m, i) => (
+                <div key={i} className="chat-message">
+                  <strong>{m.sender}</strong> <span>{m.time}</span>
+                  <p>{m.text}</p>
+                </div>
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+            <div className="chat-input">
+              <input
+                type="text"
+                placeholder="Type a message..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+              />
+              <button onClick={sendMessage}>Send</button>
+            </div>
+          </div>
+        )}
       </div>
 
       <aside className="sidebar">

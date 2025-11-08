@@ -33,7 +33,7 @@ const io = new Server(server, {
   },
 });
 
-// ✅ Each room now stores { users, files }
+// ✅ Each room stores { users, files, messages }
 const rooms = new Map();
 
 io.on("connection", (socket) => {
@@ -57,14 +57,16 @@ io.on("connection", (socket) => {
       rooms.set(roomId, {
         users: new Map(),
         files: { "main.js": "// start code here" },
+        messages: [], // 💬 chat messages
       });
     }
 
     const room = rooms.get(roomId);
     room.users.set(socket.id, { name: userName, online: true });
 
-    // Send current files to the user
+    // Send current files & chat to the new user
     socket.emit("loadFiles", room.files);
+    socket.emit("loadChat", room.messages);
 
     // Notify all users
     io.to(roomId).emit("userListUpdate", Array.from(room.users.values()));
@@ -74,6 +76,28 @@ io.on("connection", (socket) => {
       message: `🟢 ${userName} joined the room`,
       type: "join",
     });
+  });
+
+  // ------------------------
+  // 💬 CHAT HANDLING
+  // ------------------------
+  socket.on("sendMessage", ({ roomId, userName, text }) => {
+    if (!rooms.has(roomId)) return;
+
+    const room = rooms.get(roomId);
+    const message = {
+      sender: userName,
+      text,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+
+    room.messages.push(message);
+
+    // Send to all users in the room
+    io.to(roomId).emit("receiveMessage", message);
   });
 
   // ------------------------
