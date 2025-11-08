@@ -4,7 +4,7 @@ import io from "socket.io-client";
 import Editor from "@monaco-editor/react";
 import { v4 as uuid } from "uuid";
 
-//  Automatically switch between local & production
+// Automatically switch between local & production
 const socket = io(
   import.meta.env.MODE === "development"
     ? "http://localhost:5000"
@@ -24,7 +24,7 @@ const App = () => {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
 
-  //  Event Listeners
+  // Socket listeners
   useEffect(() => {
     socket.on("userJoined", setUsers);
     socket.on("codeUpdate", setCode);
@@ -44,14 +44,13 @@ const App = () => {
     };
   }, []);
 
-  //  Handle leaving room before reload
+  // Leave room on tab close
   useEffect(() => {
     const handleBeforeUnload = () => socket.emit("leaveRoom");
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
-  // Join / Leave
   const joinRoom = () => {
     if (roomId && userName) {
       socket.emit("join", { roomId, userName });
@@ -67,52 +66,77 @@ const App = () => {
     setCode("// start code here");
   };
 
-  //  Copy Room ID
   const copyRoomId = () => {
     navigator.clipboard.writeText(roomId);
     setCopySuccess("Copied!");
     setTimeout(() => setCopySuccess(""), 1500);
   };
 
-  //  Code Editing & Typing
   const handleCodeChange = (newCode) => {
     setCode(newCode);
     socket.emit("codeChange", { roomId, code: newCode });
     socket.emit("typing", { roomId, userName });
   };
 
-  //  Run Code
   const runCode = () => {
     socket.emit("compileCode", { code, roomId, language, version, input });
   };
 
-  //  Create new room
   const createRoomId = () => setRoomId(uuid());
 
+  // ============================
+  // JOIN PAGE
+  // ============================
   if (!joined) {
     return (
-      <div className="join-container">
-        <div className="join-form">
-          <h1>Join Code Room</h1>
-          <input
-            type="text"
-            placeholder="Room ID"
-            value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
+      <div className="join-page">
+        <div className="join-left">
+          <img
+            src="https://cdn.dribbble.com/users/1162077/screenshots/3848914/programmer.gif"
+            alt="Coding Illustration"
+            className="join-illustration"
           />
-          <button onClick={createRoomId}>Generate ID</button>
-          <input
-            type="text"
-            placeholder="Your Name"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-          />
-          <button onClick={joinRoom}>Join Room</button>
+        </div>
+
+        <div className="join-right">
+          <div className="brand">
+            <h1 className="brand-title">
+              <span className="brand-main">Code</span>
+              <span className="brand-accent">Sync</span>
+            </h1>
+            <p className="brand-sub">
+              Collaborate. Code. Compile. In Real-Time.
+            </p>
+          </div>
+
+          <div className="join-form">
+            <input
+              type="text"
+              placeholder="Room ID"
+              value={roomId}
+              onChange={(e) => setRoomId(e.target.value)}
+            />
+            <button onClick={createRoomId} className="generate-btn">
+              Generate Unique ID
+            </button>
+            <input
+              type="text"
+              placeholder="Your Name"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+            />
+            <button onClick={joinRoom} className="join-btn">
+              Join Room
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
+  // ============================
+  // EDITOR PAGE
+  // ============================
   return (
     <div className="editor-container">
       <aside className="sidebar">

@@ -1,3 +1,4 @@
+/* GLOBAL */
 * {
   margin: 0;
   padding: 0;
@@ -6,232 +7,335 @@
 }
 
 body {
-  background-color: #0f1117;
+  background: #0f1117;
   color: #e5e7eb;
-  height: 100vh;
-  overflow: hidden;
-  line-height: 1.6;
 }
 
-/* 🔹 Join Page */
-.join-container {
+/* ================= JOIN PAGE ================= */
+
+.join-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #0f1117;
+  color: #e5e7eb;
+  gap: 6rem;
+  padding: 0 6rem;
+}
+
+/* Left Side */
+.join-left {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: #0f1117;
+}
+
+.join-illustration {
+  width: 420px;
+  max-width: 100%;
+  border-radius: 12px;
+  filter: drop-shadow(0 0 25px rgba(0, 0, 0, 0.4));
+}
+
+/* Right Side */
+.join-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.brand {
+  margin-bottom: 2.5rem;
+}
+
+.brand-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.brand-main {
+  color: #fff;
+}
+
+.brand-accent {
+  color: #10b981;
+}
+
+.brand-sub {
+  color: #9ca3af;
+  font-size: 1rem;
+  margin-top: 0.3rem;
 }
 
 .join-form {
-  background: #1a1c23;
-  padding: 2.5rem;
-  border-radius: 12px;
-  width: 360px;
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.35);
-}
-
-.join-form h1 {
-  font-size: 1.7rem;
-  text-align: center;
-  color: #fff;
-  margin-bottom: 2rem;
-  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 370px;
+  gap: 1rem;
 }
 
 .join-form input {
-  width: 100%;
   padding: 0.9rem;
-  margin-bottom: 1.25rem;
   border: 1px solid #2e313a;
   background: #12141b;
   color: #e5e7eb;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.95rem;
-  transition: border 0.2s ease;
 }
 
 .join-form input:focus {
-  border-color: #3b82f6;
+  border-color: #10b981;
   outline: none;
 }
 
-.join-form button {
-  width: 100%;
+.generate-btn,
+.join-btn {
   padding: 0.9rem;
   border: none;
-  border-radius: 6px;
-  background: #3b82f6;
-  color: white;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
-  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  transition: 0.2s ease;
 }
 
-.join-form button:hover {
-  background: #2563eb;
+.generate-btn {
+  background: #1f2937;
+  color: #10b981;
+  border: 1px solid #10b981;
 }
 
-/* 💻 Editor Layout */
+.generate-btn:hover {
+  background: #10b981;
+  color: #fff;
+}
+
+.join-btn {
+  background: #10b981;
+  color: white;
+}
+
+.join-btn:hover {
+  background: #0e9f6e;
+}
+
+/* ================== ROOM / EDITOR PAGE ================== */
 .editor-container {
   display: flex;
   height: 100vh;
-  background: #0f1117;
+  background: #0d1117;
   color: #e5e7eb;
+  overflow: hidden;
 }
 
-/* Sidebar */
+/* 🔹 Sidebar */
 .sidebar {
   width: 280px;
-  background: #181a20;
-  padding: 2rem 1.75rem;
+  background: #151821;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-right: 1px solid #20242d;
+  border-right: 1px solid #1e2028;
+  padding: 2rem 1.5rem;
 }
 
+/* Room Info */
 .room-info {
-  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
 .room-info h2 {
-  font-size: 1.05rem;
   color: #60a5fa;
+  font-size: 1rem;
+  font-weight: 600;
   text-align: center;
-  margin-bottom: 1.25rem;
+  word-break: break-all;
+  line-height: 1.4;
 }
 
 .copy-button {
   width: 100%;
   padding: 0.75rem;
-  border: none;
-  border-radius: 6px;
-  background: #2563eb;
+  background: #3b82f6;
   color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .copy-button:hover {
-  background: #1d4ed8;
+  background: #2563eb;
+  transform: scale(1.02);
 }
 
 .copy-success {
-  display: block;
-  text-align: center;
   color: #22c55e;
-  font-size: 0.8rem;
-  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
 }
 
+/* Users Section */
 .sidebar h3 {
   margin-top: 2rem;
   font-size: 0.95rem;
   color: #9ca3af;
-  border-bottom: 1px solid #2e313a;
+  border-bottom: 1px solid #2a2e37;
   padding-bottom: 0.4rem;
 }
 
 .sidebar ul {
   list-style: none;
-  margin-top: 0.75rem;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   max-height: 180px;
   overflow-y: auto;
-  padding-right: 0.5rem;
 }
 
 .sidebar ul li {
   padding: 0.6rem;
   border-radius: 6px;
-  background: #1f232b;
-  margin-bottom: 0.5rem;
+  background: #1e212b;
+  text-align: center;
   font-size: 0.9rem;
+  color: #d1d5db;
+  border: 1px solid #2a2e37;
+  transition: background 0.2s ease;
+}
+
+.sidebar ul li:hover {
+  background: #242730;
 }
 
 .typing-indicator {
   font-size: 0.85rem;
-  color: #60a5fa;
-  margin-top: 1.25rem;
+  color: #3b82f6;
   text-align: center;
+  margin-top: 1rem;
 }
 
+/* Language Selector */
 .language-selector {
   width: 100%;
   padding: 0.75rem;
   margin-top: 1.5rem;
-  border: none;
-  border-radius: 6px;
-  background: #1f232b;
+  background: #1f232d;
   color: #e5e7eb;
+  border: 1px solid #2a2e37;
+  border-radius: 8px;
+  font-size: 0.9rem;
   cursor: pointer;
+  transition: 0.2s ease;
 }
 
+.language-selector:hover {
+  border-color: #3b82f6;
+}
+
+/* Leave Button */
 .leave-button {
+  margin-top: 1.8rem;
   width: 100%;
   padding: 0.9rem;
-  border: none;
-  border-radius: 6px;
   background: #dc2626;
-  color: #fff;
+  color: white;
+  border: none;
+  border-radius: 8px;
   font-weight: 600;
-  margin-top: 1.5rem;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .leave-button:hover {
   background: #b91c1c;
+  transform: scale(1.02);
 }
 
-/* Editor Area */
+/* ================== CODE AREA ================== */
 .editor-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 1.5rem 2rem;
   background: #12141b;
+  padding: 1.8rem 2rem;
+  gap: 1rem;
 }
 
+/* Monaco Editor */
+.editor-wrapper > div:first-child {
+  border-radius: 8px;
+  border: 1px solid #1e2028;
+  overflow: hidden;
+}
+
+/* Input & Output Consoles */
 .input-console,
 .output-console {
   width: 100%;
-  padding: 0.85rem;
-  border: none;
-  border-radius: 6px;
-  margin-top: 1rem;
+  padding: 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #2a2e37;
   font-family: "Fira Code", monospace;
   font-size: 0.95rem;
   resize: none;
+  outline: none;
 }
 
 .input-console {
-  height: 100px;
-  background: #0d0f13;
+  background: #0e1015;
   color: #e5e7eb;
-  border: 1px solid #2e313a;
+  height: 80px;
 }
 
 .output-console {
-  height: 220px;
-  background: #0d0f13;
+  background: #0e1015;
   color: #22c55e;
-  border: 1px solid #2e313a;
+  height: 200px;
 }
 
+/* Run Button */
 .run-btn {
-  margin-top: 1rem;
-  padding: 0.9rem;
+  margin: 0.5rem 0;
+  align-self: flex-start;
+  padding: 0.9rem 2rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #22c55e;
   color: white;
   font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .run-btn:hover {
   background: #16a34a;
+  transform: scale(1.03);
+}
+
+/* Scrollbar (for users list, code, etc.) */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #3b3f4b;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
 }
