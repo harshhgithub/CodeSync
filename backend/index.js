@@ -8,7 +8,7 @@ import cors from "cors";
 const app = express();
 app.use(express.json());
 
-//  Allow both local & deployed frontends
+// ✅ Allow both local & deployed frontends
 app.use(
   cors({
     origin: [
@@ -31,7 +31,7 @@ const io = new Server(server, {
   },
 });
 
-//  Each room has: users (Set), code (String), output (String)
+// ✅ Each room stores user objects instead of just names
 const rooms = new Map();
 
 io.on("connection", (socket) => {
@@ -40,68 +40,80 @@ io.on("connection", (socket) => {
   let currentRoom = null;
   let currentUser = null;
 
-  //  Join Room
+  // ------------------------
+  // 🔹 JOIN ROOM
+  // ------------------------
   socket.on("join", ({ roomId, userName }) => {
-    console.log(`${userName} joined room ${roomId}`);
-
-    // Leave old room if needed
-    if (currentRoom && rooms.has(currentRoom)) {
-      rooms.get(currentRoom).users.delete(currentUser);
-      io.to(currentRoom).emit(
-        "userJoined",
-        Array.from(rooms.get(currentRoom).users)
-      );
-      socket.leave(currentRoom);
-    }
+    console.log(`👤 ${userName} joined room ${roomId}`);
 
     currentRoom = roomId;
     currentUser = userName;
     socket.join(roomId);
 
-    // Initialize room if missing
+    // Create room if it doesn't exist
     if (!rooms.has(roomId)) {
-      rooms.set(roomId, { users: new Set(), code: "// start code here" });
+      rooms.set(roomId, { users: new Map(), code: "// start code here" });
     }
 
-    // Add user
-    rooms.get(roomId).users.add(userName);
+    const room = rooms.get(roomId);
+    room.users.set(socket.id, { name: userName, online: true });
 
-    // Send current code to the newly joined user
-    socket.emit("codeUpdate", rooms.get(roomId).code);
+    // Send current code to newly joined user
+    socket.emit("codeUpdate", room.code);
 
-    // Notify everyone in the room about the updated user list
-    io.to(roomId).emit("userJoined", Array.from(rooms.get(roomId).users));
+    // Notify all users in room
+    io.to(roomId).emit(
+      "userListUpdate",
+      Array.from(room.users.values())
+    );
+
+    // 🔔 Notify others
+    socket.to(roomId).emit("userNotification", {
+      message: `🟢 ${userName} joined the room`,
+      type: "join",
+    });
   });
 
-  //  Code Changes (Sync across users)
+  // ------------------------
+  // 🔹 CODE SYNC
+  // ------------------------
   socket.on("codeChange", ({ roomId, code }) => {
     if (rooms.has(roomId)) {
       rooms.get(roomId).code = code;
+      socket.to(roomId).emit("codeUpdate", code);
     }
-    socket.to(roomId).emit("codeUpdate", code);
   });
 
-  //  Language Change
+  // ------------------------
+  // 🔹 LANGUAGE CHANGE
+  // ------------------------
   socket.on("languageChange", ({ roomId, language }) => {
     io.to(roomId).emit("languageUpdate", language);
   });
 
-  //  Typing Indicator
+  // ------------------------
+  // 🔹 TYPING INDICATOR
+  // ------------------------
   socket.on("typing", ({ roomId, userName }) => {
     socket.to(roomId).emit("userTyping", userName);
   });
 
-  //  Code Execution using Piston API
+  // ------------------------
+  // 🔹 COMPILE CODE
+  // ------------------------
   socket.on(
     "compileCode",
     async ({ code, roomId, language, version, input }) => {
       try {
-        const response = await axios.post("https://emkc.org/api/v2/piston/execute", {
-          language,
-          version,
-          files: [{ content: code }],
-          stdin: input,
-        });
+        const response = await axios.post(
+          "https://emkc.org/api/v2/piston/execute",
+          {
+            language,
+            version,
+            files: [{ content: code }],
+            stdin: input,
+          }
+        );
 
         const output = response.data.run.output || "No output.";
         rooms.get(roomId).output = output;
@@ -115,34 +127,67 @@ io.on("connection", (socket) => {
     }
   );
 
-  //  Leave Room
+  // ------------------------
+  // 🔹 LEAVE ROOM
+  // ------------------------
   socket.on("leaveRoom", () => {
     if (currentRoom && currentUser && rooms.has(currentRoom)) {
-      rooms.get(currentRoom).users.delete(currentUser);
+      const room = rooms.get(currentRoom);
+      room.users.delete(socket.id);
+
       io.to(currentRoom).emit(
-        "userJoined",
-        Array.from(rooms.get(currentRoom).users)
+        "userListUpdate",
+        Array.from(room.users.values())
       );
+
+      io.to(currentRoom).emit("userNotification", {
+        message: `🔴 ${currentUser} left the room`,
+        type: "leave",
+      });
+
       socket.leave(currentRoom);
-      currentRoom = null;
-      currentUser = null;
     }
+
+    currentRoom = null;
+    currentUser = null;
   });
 
-  //  Disconnect
+  // ------------------------
+  // 🔹 DISCONNECT
+  // ------------------------
   socket.on("disconnect", () => {
-    if (currentRoom && currentUser && rooms.has(currentRoom)) {
-      rooms.get(currentRoom).users.delete(currentUser);
-      io.to(currentRoom).emit(
-        "userJoined",
-        Array.from(rooms.get(currentRoom).users)
-      );
+    console.log("🔴 Disconnected:", socket.id);
+
+    if (currentRoom && rooms.has(currentRoom)) {
+      const room = rooms.get(currentRoom);
+      const user = room.users.get(socket.id);
+
+      if (user) {
+        user.online = false;
+
+        io.to(currentRoom).emit(
+          "userListUpdate",
+          Array.from(room.users.values())
+        );
+
+        io.to(currentRoom).emit("userNotification", {
+          message: `🔴 ${user.name} disconnected`,
+          type: "leave",
+        });
+
+        // Cleanup offline users after 10s
+        setTimeout(() => {
+          const u = room.users.get(socket.id);
+          if (u && !u.online) room.users.delete(socket.id);
+        }, 10000);
+      }
     }
-    console.log("🔴 User Disconnected:", socket.id);
   });
 });
 
-//  Serve frontend if built
+// ------------------------
+// 🔹 SERVE FRONTEND
+// ------------------------
 const port = process.env.PORT || 5000;
 const __dirname = path.resolve();
 

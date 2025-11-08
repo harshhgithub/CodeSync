@@ -23,6 +23,7 @@ const App = () => {
   const [typing, setTyping] = useState("");
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
+  const [notifications, setNotifications] = useState([]); // 🔥 New
 
   // Socket listeners
   useEffect(() => {
@@ -35,12 +36,24 @@ const App = () => {
       setTimeout(() => setTyping(""), 2000);
     });
 
+    // 🔥 New listeners
+    socket.on("userListUpdate", (list) => setUsers(list));
+    socket.on("userNotification", (notif) => {
+      setNotifications((prev) => [...prev, notif]);
+      setTimeout(
+        () => setNotifications((prev) => prev.slice(1)),
+        3000 // disappears after 3s
+      );
+    });
+
     return () => {
       socket.off("userJoined");
       socket.off("codeUpdate");
       socket.off("languageUpdate");
       socket.off("codeResponse");
       socket.off("userTyping");
+      socket.off("userListUpdate");
+      socket.off("userNotification");
     };
   }, []);
 
@@ -139,6 +152,15 @@ const App = () => {
   // ============================
   return (
     <div className="editor-container">
+      {/* 🔥 Notifications */}
+      <div className="notification-container">
+        {notifications.map((n, i) => (
+          <div key={i} className={`notification ${n.type}`}>
+            {n.message}
+          </div>
+        ))}
+      </div>
+
       <aside className="sidebar">
         <div className="room-info">
           <h2>Room: {roomId}</h2>
@@ -148,8 +170,20 @@ const App = () => {
           {copySuccess && <span className="copy-success">{copySuccess}</span>}
         </div>
 
-        <h3>Users in Room:</h3>
-        <ul>{users.map((u, i) => <li key={i}>{u.slice(0, 8)}...</li>)}</ul>
+        <div className="user-list">
+          <h3>Users</h3>
+          <ul>
+            {users.map((u, i) => (
+              <li key={i}>
+                <span
+                  className={`status-dot ${u.online ? "online" : "offline"}`}
+                ></span>
+                {u.name}
+              </li>
+            ))}
+          </ul>
+        </div>
+
         <p className="typing-indicator">{typing}</p>
 
         <select
