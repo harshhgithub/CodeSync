@@ -15,7 +15,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://realtime-code-editor-zwp3.onrender.com",
+      "https://codesync-1zeu.onrender.com",
     ],
     methods: ["GET", "POST"],
   })
@@ -27,7 +27,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       "http://localhost:5173",
-      "https://realtime-code-editor-zwp3.onrender.com",
+      "https://codesync-1zeu.onrender.com",
     ],
     methods: ["GET", "POST"],
   },

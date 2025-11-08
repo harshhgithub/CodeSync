@@ -8,7 +8,7 @@ import { v4 as uuid } from "uuid";
 const socket = io(
   import.meta.env.MODE === "development"
     ? "http://localhost:5000"
-    : "https://realtime-code-editor-zwp3.onrender.com"
+    : "https://codesync-1zeu.onrender.com"
 );
 
 const App = () => {
@@ -143,7 +143,7 @@ const App = () => {
       `${
         import.meta.env.MODE === "development"
           ? "http://localhost:5000"
-          : "https://realtime-code-editor-zwp3.onrender.com"
+          : "https://codesync-1zeu.onrender.com"
       }/api/rooms/${roomId}/download`
     );
   };
