@@ -23,7 +23,7 @@ A modern full-stack **real-time collaborative code editor** built with **React, 
 - React (Vite)
 - Socket.IO Client
 - Monaco Editor
-- TailwindCSS (or custom CSS)
+- CSS
 
 **Backend:**
 - Node.js + Express.js
