@@ -17,45 +17,56 @@ const App = () => {
   const [userName, setUserName] = useState("");
   const [language, setLanguage] = useState("javascript");
   const [version, setVersion] = useState("*");
+  const [files, setFiles] = useState({}); // 🔥 Multiple files
+  const [activeFile, setActiveFile] = useState("main.js");
   const [code, setCode] = useState("// start code here");
   const [users, setUsers] = useState([]);
   const [copySuccess, setCopySuccess] = useState("");
   const [typing, setTyping] = useState("");
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
-  const [notifications, setNotifications] = useState([]); // 🔥 New
+  const [notifications, setNotifications] = useState([]);
 
-  // Socket listeners
+  // 🔹 Socket Listeners
   useEffect(() => {
-    socket.on("userJoined", setUsers);
-    socket.on("codeUpdate", setCode);
-    socket.on("languageUpdate", setLanguage);
-    socket.on("codeResponse", (res) => setOutput(res.run.output));
-    socket.on("userTyping", (user) => {
-      setTyping(`${user.slice(0, 8)}... is typing`);
-      setTimeout(() => setTyping(""), 2000);
+    socket.on("loadFiles", (roomFiles) => {
+      setFiles(roomFiles);
+      const firstFile = Object.keys(roomFiles)[0];
+      setActiveFile(firstFile);
+      setCode(roomFiles[firstFile]);
     });
 
-    // 🔥 New listeners
+    socket.on("codeUpdate", ({ fileName, code }) => {
+      setFiles((prev) => ({ ...prev, [fileName]: code }));
+      if (fileName === activeFile) setCode(code);
+    });
+
+    socket.on("languageUpdate", setLanguage);
+    socket.on("codeResponse", (res) => setOutput(res.run.output));
     socket.on("userListUpdate", (list) => setUsers(list));
     socket.on("userNotification", (notif) => {
       setNotifications((prev) => [...prev, notif]);
       setTimeout(
         () => setNotifications((prev) => prev.slice(1)),
-        3000 // disappears after 3s
+        3000
       );
     });
 
+    socket.on("userTyping", (user) => {
+      setTyping(`${user.slice(0, 8)}... is typing`);
+      setTimeout(() => setTyping(""), 2000);
+    });
+
     return () => {
-      socket.off("userJoined");
+      socket.off("loadFiles");
       socket.off("codeUpdate");
       socket.off("languageUpdate");
       socket.off("codeResponse");
-      socket.off("userTyping");
       socket.off("userListUpdate");
       socket.off("userNotification");
+      socket.off("userTyping");
     };
-  }, []);
+  }, [activeFile]);
 
   // Leave room on tab close
   useEffect(() => {
@@ -76,6 +87,7 @@ const App = () => {
     setJoined(false);
     setRoomId("");
     setUserName("");
+    setFiles({});
     setCode("// start code here");
   };
 
@@ -87,7 +99,8 @@ const App = () => {
 
   const handleCodeChange = (newCode) => {
     setCode(newCode);
-    socket.emit("codeChange", { roomId, code: newCode });
+    setFiles((prev) => ({ ...prev, [activeFile]: newCode }));
+    socket.emit("codeChange", { roomId, fileName: activeFile, code: newCode });
     socket.emit("typing", { roomId, userName });
   };
 
@@ -96,6 +109,30 @@ const App = () => {
   };
 
   const createRoomId = () => setRoomId(uuid());
+
+  // 🔹 File management
+  const createFile = () => {
+    const fileName = prompt("Enter new file name (e.g., utils.js):");
+    if (fileName && !files[fileName]) {
+      socket.emit("createFile", { roomId, fileName });
+    }
+  };
+
+  const deleteFile = (fileName) => {
+    if (window.confirm(`Delete ${fileName}?`)) {
+      socket.emit("deleteFile", { roomId, fileName });
+    }
+  };
+
+  const downloadZip = () => {
+    window.open(
+      `${
+        import.meta.env.MODE === "development"
+          ? "http://localhost:5000"
+          : "https://realtime-code-editor-zwp3.onrender.com"
+      }/api/rooms/${roomId}/download`
+    );
+  };
 
   // ============================
   // JOIN PAGE
@@ -170,6 +207,41 @@ const App = () => {
           {copySuccess && <span className="copy-success">{copySuccess}</span>}
         </div>
 
+        {/* 🗂 File Explorer */}
+        <div className="file-section">
+          <h3>Files</h3>
+          <ul>
+            {Object.keys(files).map((file) => (
+              <li
+                key={file}
+                className={file === activeFile ? "active-file" : ""}
+                onClick={() => {
+                  setActiveFile(file);
+                  setCode(files[file]);
+                }}
+              >
+                {file}
+                <button
+                  className="delete-file"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteFile(file);
+                  }}
+                >
+                  ✖
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button className="file-btn" onClick={createFile}>
+            ➕ New File
+          </button>
+          <button className="download-btn" onClick={downloadZip}>
+            💾 Download ZIP
+          </button>
+        </div>
+
+        {/* 👥 User List */}
         <div className="user-list">
           <h3>Users</h3>
           <ul>
@@ -207,6 +279,7 @@ const App = () => {
       </aside>
 
       <main className="editor-wrapper">
+        <h3 className="file-title">{activeFile}</h3>
         <Editor
           height="60%"
           language={language}
@@ -223,7 +296,7 @@ const App = () => {
           className="input-console"
         />
         <button className="run-btn" onClick={runCode}>
-          Execute
+          Run
         </button>
         <textarea
           readOnly

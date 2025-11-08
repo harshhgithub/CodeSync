@@ -4,6 +4,8 @@ import { Server } from "socket.io";
 import path from "path";
 import axios from "axios";
 import cors from "cors";
+import JSZip from "jszip";
+import fs from "fs";
 
 const app = express();
 app.use(express.json());
@@ -31,7 +33,7 @@ const io = new Server(server, {
   },
 });
 
-// ✅ Each room stores user objects instead of just names
+// ✅ Each room now stores { users, files }
 const rooms = new Map();
 
 io.on("connection", (socket) => {
@@ -52,20 +54,20 @@ io.on("connection", (socket) => {
 
     // Create room if it doesn't exist
     if (!rooms.has(roomId)) {
-      rooms.set(roomId, { users: new Map(), code: "// start code here" });
+      rooms.set(roomId, {
+        users: new Map(),
+        files: { "main.js": "// start code here" },
+      });
     }
 
     const room = rooms.get(roomId);
     room.users.set(socket.id, { name: userName, online: true });
 
-    // Send current code to newly joined user
-    socket.emit("codeUpdate", room.code);
+    // Send current files to the user
+    socket.emit("loadFiles", room.files);
 
-    // Notify all users in room
-    io.to(roomId).emit(
-      "userListUpdate",
-      Array.from(room.users.values())
-    );
+    // Notify all users
+    io.to(roomId).emit("userListUpdate", Array.from(room.users.values()));
 
     // 🔔 Notify others
     socket.to(roomId).emit("userNotification", {
@@ -75,12 +77,34 @@ io.on("connection", (socket) => {
   });
 
   // ------------------------
-  // 🔹 CODE SYNC
+  // 🔹 CODE SYNC PER FILE
   // ------------------------
-  socket.on("codeChange", ({ roomId, code }) => {
+  socket.on("codeChange", ({ roomId, fileName, code }) => {
     if (rooms.has(roomId)) {
-      rooms.get(roomId).code = code;
-      socket.to(roomId).emit("codeUpdate", code);
+      const room = rooms.get(roomId);
+      room.files[fileName] = code;
+      socket.to(roomId).emit("codeUpdate", { fileName, code });
+    }
+  });
+
+  // ------------------------
+  // 🔹 FILE MANAGEMENT
+  // ------------------------
+  socket.on("createFile", ({ roomId, fileName }) => {
+    if (rooms.has(roomId)) {
+      const files = rooms.get(roomId).files;
+      if (!files[fileName]) {
+        files[fileName] = "";
+        io.to(roomId).emit("loadFiles", files);
+      }
+    }
+  });
+
+  socket.on("deleteFile", ({ roomId, fileName }) => {
+    if (rooms.has(roomId)) {
+      const files = rooms.get(roomId).files;
+      delete files[fileName];
+      io.to(roomId).emit("loadFiles", files);
     }
   });
 
@@ -116,8 +140,6 @@ io.on("connection", (socket) => {
         );
 
         const output = response.data.run.output || "No output.";
-        rooms.get(roomId).output = output;
-
         io.to(roomId).emit("codeResponse", response.data);
       } catch (error) {
         io.to(roomId).emit("codeResponse", {
@@ -182,6 +204,29 @@ io.on("connection", (socket) => {
         }, 10000);
       }
     }
+  });
+});
+
+// ------------------------
+// 🔹 DOWNLOAD ZIP ENDPOINT
+// ------------------------
+app.get("/api/rooms/:roomId/download", async (req, res) => {
+  const { roomId } = req.params;
+  if (!rooms.has(roomId)) return res.status(404).send("Room not found");
+
+  const { files } = rooms.get(roomId);
+  const zip = new JSZip();
+
+  for (const [name, content] of Object.entries(files)) {
+    zip.file(name, content);
+  }
+
+  const zipContent = await zip.generateAsync({ type: "nodebuffer" });
+  const zipPath = path.join(process.cwd(), `${roomId}.zip`);
+  fs.writeFileSync(zipPath, zipContent);
+
+  res.download(zipPath, `${roomId}.zip`, () => {
+    fs.unlinkSync(zipPath);
   });
 });
 

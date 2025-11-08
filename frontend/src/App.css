@@ -12,7 +12,6 @@ body {
 }
 
 /* ================= JOIN PAGE ================= */
-
 .join-page {
   display: flex;
   align-items: center;
@@ -24,7 +23,6 @@ body {
   padding: 0 6rem;
 }
 
-/* Left Side */
 .join-left {
   flex: 1;
   display: flex;
@@ -39,7 +37,6 @@ body {
   filter: drop-shadow(0 0 25px rgba(0, 0, 0, 0.4));
 }
 
-/* Right Side */
 .join-right {
   flex: 1;
   display: flex;
@@ -187,16 +184,19 @@ body {
   margin-top: 0.2rem;
 }
 
-/* Users Section */
-.sidebar h3 {
+/* 🗂 File Section */
+.file-section {
   margin-top: 2rem;
+}
+
+.file-section h3 {
   font-size: 0.95rem;
   color: #9ca3af;
   border-bottom: 1px solid #2a2e37;
   padding-bottom: 0.4rem;
 }
 
-.sidebar ul {
+.file-section ul {
   list-style: none;
   margin-top: 1rem;
   display: flex;
@@ -206,19 +206,102 @@ body {
   overflow-y: auto;
 }
 
-.sidebar ul li {
-  padding: 0.6rem;
-  border-radius: 6px;
+.file-section li {
   background: #1e212b;
-  text-align: center;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #2a2e37;
   font-size: 0.9rem;
   color: #d1d5db;
-  border: 1px solid #2a2e37;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   transition: background 0.2s ease;
 }
 
-.sidebar ul li:hover {
+.file-section li.active-file {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.file-section li:hover {
   background: #242730;
+}
+
+.delete-file {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0 4px;
+}
+
+.file-btn,
+.download-btn {
+  margin-top: 0.8rem;
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.file-btn {
+  background: #1e293b;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+}
+
+.file-btn:hover {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.download-btn {
+  background: #1e3a8a;
+  color: #fff;
+  border: none;
+}
+
+.download-btn:hover {
+  background: #2563eb;
+}
+
+/* 👥 Users */
+.user-list h3 {
+  margin-top: 2rem;
+  font-size: 0.95rem;
+  color: #9ca3af;
+  border-bottom: 1px solid #2a2e37;
+  padding-bottom: 0.4rem;
+}
+
+.user-list ul {
+  list-style: none;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.user-list ul li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1e212b;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #2a2e37;
+  font-size: 0.9rem;
+  color: #d1d5db;
 }
 
 .typing-indicator {
@@ -276,14 +359,19 @@ body {
   gap: 1rem;
 }
 
-/* Monaco Editor */
+.file-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #60a5fa;
+}
+
 .editor-wrapper > div:first-child {
   border-radius: 8px;
   border: 1px solid #1e2028;
   overflow: hidden;
 }
 
-/* Input & Output Consoles */
+/* Consoles */
 .input-console,
 .output-console {
   width: 100%;
@@ -328,7 +416,7 @@ body {
   transform: scale(1.03);
 }
 
-/* Scrollbar (for users list, code, etc.) */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -339,6 +427,7 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #4b5563;
 }
+
 /* 🔥 Notifications */
 .notification-container {
   position: fixed;
