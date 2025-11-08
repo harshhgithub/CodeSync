@@ -31,6 +31,3 @@ A modern full-stack **real-time collaborative code editor** built with **React, 
 - Axios (for Piston API)
 - JSZip (for ZIP download)
 - CORS
-
-git clone https://github.com/yourusername/codesync.git
-cd codesync
