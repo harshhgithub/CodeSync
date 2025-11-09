@@ -254,6 +254,11 @@ app.get("/api/rooms/:roomId/download", async (req, res) => {
   });
 });
 
+// HEALTH CHECK ENDPOINT here 
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 // ------------------------
 // 🔹 SERVE FRONTEND
 // ------------------------
