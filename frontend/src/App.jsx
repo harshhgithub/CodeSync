@@ -27,13 +27,13 @@ const App = () => {
   const [output, setOutput] = useState("");
   const [notifications, setNotifications] = useState([]);
 
-  // 💬 Chat states
+  //  Chat states
   const [chat, setChat] = useState([]);
   const [message, setMessage] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
   const chatEndRef = useRef(null);
 
-  // 🔹 Socket Listeners
+  // Socket Listeners
   useEffect(() => {
     socket.on("loadFiles", (roomFiles) => {
       setFiles(roomFiles);
@@ -60,7 +60,7 @@ const App = () => {
       setTimeout(() => setTyping(""), 2000);
     });
 
-    // 💬 Chat listeners
+    //  Chat listeners
     socket.on("loadChat", (msgs) => setChat(msgs));
     socket.on("receiveMessage", (msg) => setChat((prev) => [...prev, msg]));
 
@@ -77,7 +77,7 @@ const App = () => {
     };
   }, [activeFile]);
 
-  // 💬 Auto-scroll chat to bottom
+  //  Auto-scroll chat to bottom
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
@@ -124,7 +124,7 @@ const App = () => {
 
   const createRoomId = () => setRoomId(uuid());
 
-  // 🔹 File management
+  //  File management
   const createFile = () => {
     const fileName = prompt("Enter new file name (e.g., utils.js):");
     if (fileName && !files[fileName]) {
@@ -148,7 +148,7 @@ const App = () => {
     );
   };
 
-  // 💬 Send Message
+  //  Send Message
   const sendMessage = () => {
     if (!message.trim()) return;
     socket.emit("sendMessage", { roomId, userName, text: message });
@@ -210,7 +210,7 @@ const App = () => {
   // ============================
   return (
     <div className="editor-container">
-      {/* 🔔 Notifications */}
+      {/*  Notifications */}
       <div className="notification-container">
         {notifications.map((n, i) => (
           <div key={i} className={`notification ${n.type}`}>
@@ -219,7 +219,7 @@ const App = () => {
         ))}
       </div>
 
-      {/* 💬 Floating Chat */}
+      {/*  Floating Chat */}
       <div className="floating-chat">
         <button
           className={`chat-toggle-btn ${chatOpen ? "open" : ""}`}
@@ -268,7 +268,7 @@ const App = () => {
           {copySuccess && <span className="copy-success">{copySuccess}</span>}
         </div>
 
-        {/* 🗂 File Explorer */}
+        {/*  File Explorer */}
         <div className="file-section">
           <h3>Files</h3>
           <ul>
@@ -302,7 +302,7 @@ const App = () => {
           </button>
         </div>
 
-        {/* 👥 User List */}
+        {/*  User List */}
         <div className="user-list">
           <h3>Users</h3>
           <ul>

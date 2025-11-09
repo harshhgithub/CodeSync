@@ -10,7 +10,7 @@ import fs from "fs";
 const app = express();
 app.use(express.json());
 
-// ✅ Allow both local & deployed frontends
+//  Allow both local & deployed frontends
 app.use(
   cors({
     origin: [
@@ -33,7 +33,7 @@ const io = new Server(server, {
   },
 });
 
-// ✅ Each room stores { users, files, messages }
+//  Each room stores { users, files, messages }
 const rooms = new Map();
 
 io.on("connection", (socket) => {
@@ -43,7 +43,7 @@ io.on("connection", (socket) => {
   let currentUser = null;
 
   // ------------------------
-  // 🔹 JOIN ROOM
+  //  JOIN ROOM
   // ------------------------
   socket.on("join", ({ roomId, userName }) => {
     console.log(`👤 ${userName} joined room ${roomId}`);
@@ -71,7 +71,7 @@ io.on("connection", (socket) => {
     // Notify all users
     io.to(roomId).emit("userListUpdate", Array.from(room.users.values()));
 
-    // 🔔 Notify others
+    //  Notify others
     socket.to(roomId).emit("userNotification", {
       message: `🟢 ${userName} joined the room`,
       type: "join",
@@ -79,7 +79,7 @@ io.on("connection", (socket) => {
   });
 
   // ------------------------
-  // 💬 CHAT HANDLING
+  //  CHAT HANDLING
   // ------------------------
   socket.on("sendMessage", ({ roomId, userName, text }) => {
     if (!rooms.has(roomId)) return;
@@ -101,7 +101,7 @@ io.on("connection", (socket) => {
   });
 
   // ------------------------
-  // 🔹 CODE SYNC PER FILE
+  //  CODE SYNC PER FILE
   // ------------------------
   socket.on("codeChange", ({ roomId, fileName, code }) => {
     if (rooms.has(roomId)) {
@@ -112,7 +112,7 @@ io.on("connection", (socket) => {
   });
 
   // ------------------------
-  // 🔹 FILE MANAGEMENT
+  //🔹 FILE MANAGEMENT
   // ------------------------
   socket.on("createFile", ({ roomId, fileName }) => {
     if (rooms.has(roomId)) {
@@ -133,21 +133,21 @@ io.on("connection", (socket) => {
   });
 
   // ------------------------
-  // 🔹 LANGUAGE CHANGE
+  //  LANGUAGE CHANGE
   // ------------------------
   socket.on("languageChange", ({ roomId, language }) => {
     io.to(roomId).emit("languageUpdate", language);
   });
 
   // ------------------------
-  // 🔹 TYPING INDICATOR
+  //  TYPING INDICATOR
   // ------------------------
   socket.on("typing", ({ roomId, userName }) => {
     socket.to(roomId).emit("userTyping", userName);
   });
 
   // ------------------------
-  // 🔹 COMPILE CODE
+  // COMPILE CODE
   // ------------------------
   socket.on(
     "compileCode",
@@ -174,7 +174,7 @@ io.on("connection", (socket) => {
   );
 
   // ------------------------
-  // 🔹 LEAVE ROOM
+  //  LEAVE ROOM
   // ------------------------
   socket.on("leaveRoom", () => {
     if (currentRoom && currentUser && rooms.has(currentRoom)) {
@@ -232,7 +232,7 @@ io.on("connection", (socket) => {
 });
 
 // ------------------------
-// 🔹 DOWNLOAD ZIP ENDPOINT
+//  DOWNLOAD ZIP ENDPOINT
 // ------------------------
 app.get("/api/rooms/:roomId/download", async (req, res) => {
   const { roomId } = req.params;
@@ -260,7 +260,7 @@ app.get("/health", (req, res) => {
 });
 
 // ------------------------
-// 🔹 SERVE FRONTEND
+//  SERVE FRONTEND
 // ------------------------
 const port = process.env.PORT || 5000;
 const __dirname = path.resolve();
