@@ -86,12 +86,9 @@ io.on("connection", (socket) => {
 
     const room = rooms.get(roomId);
     const message = {
-      sender: userName,
-      text,
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+  sender: userName,
+  text,
+  timestamp: Date.now(),
     };
 
     room.messages.push(message);

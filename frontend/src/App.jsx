@@ -239,9 +239,11 @@ const App = () => {
             <div className="chat-box">
               {chat.map((m, i) => (
                 <div key={i} className="chat-message">
-                  <strong>{m.sender}</strong> <span>{m.time}</span>
-                  <p>{m.text}</p>
-                </div>
+  <strong>{m.sender}</strong>
+  <span>{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+  <p>{m.text}</p>
+</div>
+
               ))}
               <div ref={chatEndRef} />
             </div>
