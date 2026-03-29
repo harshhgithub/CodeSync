@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "start": "node backend/server-yjs.js"
+  },
   "dependencies": {
     "lib0": "^0.2.117",
     "ws": "^8.20.0",
